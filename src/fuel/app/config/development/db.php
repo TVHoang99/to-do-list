@@ -22,7 +22,7 @@
 return array(
 	'default' => array(
 		'connection' => array(
-			'dsn'      => 'mysql:host=localhost;dbname=fuel_dev',
+			'dsn'      => 'mysql:host=db;port=3306;dbname=fuelphp_db',
 			'username' => 'root',
 			'password' => 'root',
 		),
