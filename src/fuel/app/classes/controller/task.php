@@ -8,15 +8,15 @@ use Fuel\Core\View;
 
 class Controller_Task extends Controller
 {
-	protected $user;
-	protected $task;
-	protected $task_share;
+	protected $repository_user;
+	protected $repository_task;
+	protected $repository_task_share;
 
-	public function __construct(User_Repository $user ,Task_Repository $task, Task_Share_Repository $task_share)
+	public function __construct(Repository_User $repository_user, Repository_Task $repository_task, Repository_Task_Share $repository_task_share)
 	{
-		$this->user = $user;
-		$this->task = $task;
-		$this->task_share = $task_share;
+		$this->repository_user = $repository_user;
+		$this->repository_task = $repository_task;
+		$this->repository_task_share = $repository_task_share;
 	}
 
 	public function action_index()
@@ -34,7 +34,7 @@ class Controller_Task extends Controller
 		}
 
 		// Get task
-		$task = $this->task->find($task_id);
+		$task = $this->repository_task->find($task_id);
 		if (!$task) {
 			Response::redirect('task/notfound');
 		}
@@ -48,12 +48,12 @@ class Controller_Task extends Controller
 		$share_user_id = Input::post('user_id');
 
 		// Create share record.
-		$task_share = $this->task_share::forge(array(
+		$task_share = $this->repository_task_share->create([
 			'task_id' => $task_id,
 			'user_id' => $share_user_id,
-		));
+		]);
 
-		if ($task_share->save()) {
+		if ($task_share) {
 			echo "Task shared!";
 		} else {
 			echo "An error occured when sharing task!";

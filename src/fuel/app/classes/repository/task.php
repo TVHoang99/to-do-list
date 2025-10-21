@@ -1,6 +1,6 @@
 <?php
 
-class Task_Repository extends Repository_Base
+class Repository_Task extends Repository_Base
 {
     public function getModel()
     {

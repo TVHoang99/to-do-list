@@ -1,6 +1,6 @@
 <?php
 
-class User_Repository extends Repository_Base
+class Repository_User extends Repository_Base
 {
     public function getModel()
     {
