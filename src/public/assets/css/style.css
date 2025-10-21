@@ -1,0 +1,57 @@
+/* Login */
+.login-page, .register-page {
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.bg-body-secondary {
+    background-color: #ebf1ef
+}
+
+.login-box, .register-box {
+    width: 360px;
+}
+
+.login-logo, .register-logo {
+    margin-bottom: 0.9rem;
+    font-size: 2.1rem;
+    font-weight: 300;
+    text-align: center;
+}
+
+.login-logo a, .register-logo a {
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+}
+
+.login-box .card, .register-box .card {
+    margin-bottom: 0;
+    font-size: 1rem;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.login-card-body, .register-card-body {
+    padding: 20px;
+    color: var(--bs-secondary-color);
+    background-color: var(--bs-body-bg);
+    border-top: 0;
+}
+
+.login-box-msg, .register-box-msg {
+    padding: 0 20px 20px;
+    margin: 0;
+    text-align: center;
+}
+
+.login-card-body, .register-card-body {
+    padding: 20px;
+    color: var(--bs-secondary-color);
+    background-color: var(--bs-body-bg);
+    border-top: 0;
+    borde;
+}

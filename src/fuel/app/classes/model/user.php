@@ -1,9 +1,11 @@
 <?php
 
+use Auth\Auth;
+
 class Model_User extends \Orm\Model
 {
 	protected static $_properties = [
-		'id', 'username', 'email', 'password', 'created_at', 'updated_at',
+		'id', 'username', 'email', 'password', 'salt', 'last_login', 'login_hash', 'created_at', 'updated_at',
 	];
 
 	protected static $_observers = [
@@ -17,6 +19,11 @@ class Model_User extends \Orm\Model
 			'property' => 'updated_at',
 			'mysql_timestamp' => true,
 		],
+		'Orm\Observer_Self' => array(
+            'events' => array('before_save'),
+            'method' => 'update_last_login',
+            'property' => 'last_login',
+        ),
 	];
 
 	protected static $_table_name = 'users';
@@ -43,4 +50,14 @@ class Model_User extends \Orm\Model
             'key_to' => 'id',
         ),
 	];
+
+	/**
+     * Update last_login before saving
+     */
+    public function update_last_login()
+    {
+        if (Auth::check() && $this->id == Auth::get_user_id()[1]) {
+            $this->last_login = date('Y-m-d H:i:s'); // Ensure datetime format
+        }
+    }
 }
