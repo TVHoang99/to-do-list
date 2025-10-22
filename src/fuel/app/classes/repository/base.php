@@ -41,21 +41,21 @@ abstract class Repository_Base
     public function findAll(array $options = [])
     {
         $query = $this->query();
-        
+
         if (!empty($options['where'])) {
             foreach ($options['where'] as $condition) {
                 $query->where($condition);
             }
         }
-        
+
         if (!empty($options['order_by'])) {
             $query->order_by($options['order_by']);
         }
-        
+
         if (!empty($options['related'])) {
             $query->related($options['related']);
         }
-        
+
         return $query->get();
     }
 

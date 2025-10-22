@@ -17,6 +17,10 @@ RUN a2enmod rewrite
 # Sao chép file cấu hình Apache
 COPY ./docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
+RUN a2enmod rewrite && \
+    a2dissite 000-default.conf && \
+    a2ensite 000-default.conf
+
 # Cài đặt thư mục làm việc
 WORKDIR /var/www/html
 

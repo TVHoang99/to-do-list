@@ -16,6 +16,7 @@ return array(
     'logout' => 'auth/logout', // Route for logout
     'task' => 'task/index', // Route for task index
     'task/create' => 'task/create', // Route for creating a task
-    'task/view/:id' => 'task/view', // Route for viewing a task
+    'task/view/(:id)' => 'task/view/$1', // Route for viewing a task
 	'register' => 'auth/register', // Route for user registration
+    // 'task/unshare/(:segment)/(:segment)' => 'task/unshare/$1/$2',
 );
