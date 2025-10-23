@@ -67,8 +67,9 @@ abstract class Repository_Base
      */
     public function create(array $data)
     {
-        $instance = $this->model::forge($data);
-        if ($instance->save()) {
+        $instance = $this->model::forge()->set($data);
+        $model = $instance->save();
+        if ($model) {
             return $instance;
         }
         throw new \Exception('Unable to create record.');

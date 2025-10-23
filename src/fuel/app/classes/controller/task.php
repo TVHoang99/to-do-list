@@ -34,22 +34,45 @@ class Controller_Task extends Controller
 
     public function action_index()
     {
-        // Get tasks created by the current user
+        $page = (int) \Input::get('page', 1);
+        $per_page = 6; // ✅ 6 TASKS/PAGE
 
+        // Tính offset
+        $offset = ($page - 1) * $per_page;
+
+        // Lấy tasks
         $tasks = $this->repository_task->findAll([
-            'where' => [
-                ['user_id', '=', $this->user->id],
-            ],
-            'related' => ['shared_users'],
-            'order_by' => ['created_at' => 'desc'],
+            'where' => [['user_id', '=', $this->user->id]],
+            'related' => ['user', 'shared_users'],
+            'order_by' => [['created_at', 'desc']],
+            'limit' => $per_page,
+            'offset' => $offset
         ]);
 
+        // Tổng số tasks
+        $total_tasks = count($tasks);
 
-        // Render the tasks index view
-        return View::forge('task/index', [
+        // Tổng số trang
+        $total_pages = ceil($total_tasks / $per_page);
+
+        // Giới hạn page
+        $page = max(1, min($page, $total_pages));
+        $offset = ($page - 1) * $per_page;
+
+        $data = [
             'user' => $this->user,
             'tasks' => $tasks,
-        ]);
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $total_pages,
+                'total_items' => $total_tasks,
+                'per_page' => $per_page,
+                'from' => $offset + 1,
+                'to' => min($offset + $per_page, $total_tasks)
+            ]
+        ];
+
+        return \View::forge('task/index', $data);
     }
 
     /**
@@ -69,9 +92,8 @@ class Controller_Task extends Controller
             \Session::set_flash('error', 'Task not found.');
             \Response::redirect('task');
         }
-        // echo("<pre>");var_dump($tasks[1]['id']);echo("</pre>"); die;
 
-        $task = $tasks[1];
+        $task = reset($tasks);
 
         // Kiểm tra quyền truy cập
         $is_owner = ($task['user_id'] == $this->user->id);
@@ -112,53 +134,74 @@ class Controller_Task extends Controller
 
     public function action_share($task_id)
     {
-        // Get task
-        $task = $this->repository_task->find($task_id);
-        if (!$task) {
-            Response::redirect('task/notfound');
-        }
+        try {
+            // Get task
+            $task = $this->repository_task->find($task_id);
+            if (!$task) {
+                Response::redirect('task/notfound');
+            }
 
-        // Check authorized based on session user_id
-        if ($task->user_id != \Session::get('user_id')) {
-            Response::redirect('task/unauthorized');
-        }
+            // Check authorized based on session user_id
+            if ($task->user_id != \Session::get('user_id')) {
+                Response::redirect('task/unauthorized');
+            }
 
-        // Get user_id from form
-        $share_user_id = Input::post('user_id');
+            // Get user_id from form
+            $share_user_ids = \Input::post('user_ids');
 
-        // Create share record
-        $task_share = $this->repository_task_share->create([
-            'task_id' => $task_id,
-            'user_id' => $share_user_id,
-        ]);
+            // Create share record
+            foreach ($share_user_ids as $share_user_id) {
+                $this->repository_task_share->create([
+                    'task_id' => $task_id,
+                    'user_id' => $share_user_id,
+                ]);
+            }
 
-        if ($task_share) {
-            echo "Task shared!";
-        } else {
-            echo "An error occurred when sharing task!";
+            \Session::set_flash('success', 'Task shared!');
+            \Response::redirect('task/view/' . $task_id);
+        } catch (Exception $e) {
+            Session::set_flash('error', "An error occurred when sharing task: " . $e->getMessage());
+            \Response::redirect('task/view/' . $task_id);
         }
     }
 
     public function action_create()
     {
+        $form_data = [
+            'title' => '',
+            'description' => '',
+            'status' => 0,
+            'priority' => 'medium',
+            'due_date' => ''
+        ];
+
         if (\Input::method() == 'POST') {
             $validation = \Validation::forge('create_task');
-            $validation->add_field('title', 'Title', 'required|max_length[255]');
-            $validation->add_field('description', 'Description', 'max_length[1000]');
-            $validation->add_field('status', 'Status', 'valid_string[numeric]');
-            $validation->add_field('priority', 'Priority', 'valid_string[low,medium,high]');
-            // $data = [
-            //     'title' => \Input::post('title'),
-            //     'description' => \Input::post('description'),
-            //     'status' => \Input::post('status', 0),
-            //     'priority' => \Input::post('priority', 'medium'),
-            //     'due_date' => \Input::post('due_date'),
-            // ];
 
-            // Validation
+            $validation->add('title', 'Title')->add_rule('required')
+                ->add_rule('max_length', 255);
+            $validation->add('status', 'Status')
+                ->add_rule('required')
+                ->add_rule('match_pattern', '/^[0-2]$/');
+
+            $validation->add('priority', 'Priority')
+                ->add_rule('required')
+                ->add_rule('match_pattern', '/^(low|medium|high)$/');
+
+            $validation->add('description', 'Description')
+                ->add_rule('max_length', 1000);
+
+            $validation->add_field('due_date', 'Due Date', 'valid_string[datetime]');
+
             if ($validation->run()) {
-                $task_data = $validation->validated();
-                $task_data['user_id'] = $this->user->id;
+                $task_data = [
+                    'title' => \Input::post('title'),
+                    'description' => \Input::post('description'),
+                    'status' => (int) \Input::post('status'),
+                    'priority' => \Input::post('priority'),
+                    'user_id' => $this->user->id,
+                    'deadline' => \Input::post('due_date'),
+                ];
 
                 if ($this->repository_task->create($task_data)) {
                     \Session::set_flash('success', 'Task created successfully!');
@@ -167,13 +210,21 @@ class Controller_Task extends Controller
                     \Session::set_flash('error', 'Failed to create task. Please try again.');
                 }
             } else {
-                $data['errors'] = $validation->error();
+                $form_data = [
+                    'title' => \Input::post('title', ''),
+                    'description' => \Input::post('description', ''),
+                    'status' => \Input::post('status', 0),
+                    'priority' => \Input::post('priority', 'medium'),
+                    'deadline' => \Input::post('due_date', '')
+                ];
+                \Session::set_flash('error', 'Please fix the errors below.');
             }
         }
 
         $data = [
             'user' => $this->user,
-            'errors' => isset($data['errors']) ? $data['errors'] : [],
+            'errors' => isset($validation) ? $validation->error() : [],
+            'form_data' => $form_data
         ];
 
         return \View::forge('task/create', $data);
@@ -197,6 +248,97 @@ class Controller_Task extends Controller
             \Session::set_flash('error', 'Failed to remove user from sharing.');
         }
         \Response::redirect('task/view/' . $task_id);
+    }
+
+    public function action_delete($task_id)
+    {
+        // Tìm task
+        $tasks = $this->repository_task->findAll([
+            'where' => [['id', '=', $task_id]],
+            'related' => ['user'],
+            'limit' => 1,
+        ]);
+
+        if (empty($tasks)) {
+            \Session::set_flash('error', 'Task not found.');
+            \Response::redirect('task');
+        }
+
+        $task = $tasks[0];
+
+        // Chỉ owner mới được delete
+        if ($task['user_id'] != $this->user->id) {
+            \Session::set_flash('error', 'You are not authorized to delete this task.');
+            \Response::redirect('task');
+        }
+
+        // Delete task và tất cả shares
+        $this->repository_task_share->delete(['task_id' => $task_id]);
+        $result = $this->repository_task->delete($task_id);
+
+        if ($result) {
+            \Session::set_flash('success', 'Task deleted successfully!');
+        } else {
+            \Session::set_flash('error', 'Failed to delete task. Please try again.');
+        }
+
+        \Response::redirect('task');
+    }
+
+    public function action_delete_ajax($task_id)
+    {
+        $json = [
+            'success' => false,
+            'message' => 'Unauthorized'
+        ];
+
+        try {
+            // Tìm task
+            $tasks = $this->repository_task->findAll([
+                'where' => [['id', '=', $task_id]],
+                'related' => ['user'],
+                'limit' => 1,
+            ]);
+
+            if (empty($tasks)) {
+                $json['message'] = 'Task not found';
+                return $this->json_response($json);
+            }
+
+            $task = $tasks[1];
+
+            // Chỉ owner mới delete được
+            if ($task['user_id'] != $this->user->id) {
+                $json['message'] = 'You are not authorized to delete this task';
+                return $this->json_response($json);
+            }
+
+            // Delete shares trước
+            $this->repository_task_share->delete(['task_id' => $task_id]);
+
+            // Delete task
+            if ($this->repository_task->delete($task_id)) {
+                $json = [
+                    'success' => true,
+                    'message' => 'Task deleted successfully'
+                ];
+            } else {
+                $json['message'] = 'Failed to delete task';
+            }
+        } catch (Exception $e) {
+            $json['message'] = 'Server error: ' . $e;
+        }
+
+        return $this->json_response($json);
+    }
+
+    // ✅ HELPER METHOD - TRẢ JSON
+    private function json_response($data)
+    {
+        $response = \Response::forge(\Format::forge($data)->to_json(), 200, [
+            'Content-Type' => 'application/json'
+        ]);
+        return $response;
     }
 
     private function checkAuth()

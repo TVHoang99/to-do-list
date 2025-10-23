@@ -1,24 +1,32 @@
 <?php
+
 /**
  * @var object $user
  * @var array $errors
+ * @var array $form_data
  */
+$title = $form_data['title'] ?? '';
+$description = $form_data['description'] ?? '';
+$status = $form_data['status'] ?? 0;
+$priority = $form_data['priority'] ?? 'medium';
+$due_date = $form_data['due_date'] ?? '';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create New Task - Todo App</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Quill Editor CSS -->
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -26,29 +34,34 @@
             --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
+
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
+
         .create-header {
             background: var(--primary-gradient);
             color: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         }
+
         .form-modern {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             border: none;
             overflow: hidden;
         }
+
         .form-section {
             padding: 2.5rem;
         }
+
         .form-section h5 {
             color: #495057;
             font-weight: 700;
@@ -56,6 +69,7 @@
             padding-bottom: 0.75rem;
             border-bottom: 2px solid #e9ecef;
         }
+
         .priority-badge {
             font-size: 0.875rem;
             padding: 0.5rem 1rem;
@@ -63,23 +77,42 @@
             font-weight: 600;
             border: 2px solid;
         }
-        .priority-low { background: #d4edda; color: #155724; border-color: #c3e6cb; }
-        .priority-medium { background: #fff3cd; color: #856404; border-color: #ffeaa7; }
-        .priority-high { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+        .priority-low {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .priority-medium {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+
+        .priority-high {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
         .ql-editor {
             min-height: 150px;
             font-size: 1rem;
             line-height: 1.6;
         }
+
         .character-counter {
             font-size: 0.875rem;
             color: #6c757d;
         }
+
         .submit-section {
             background: #f8f9fa;
             border-top: 1px solid #e9ecef;
             padding: 2rem;
         }
+
         .btn-modern {
             border-radius: 12px;
             font-weight: 600;
@@ -87,32 +120,41 @@
             border: none;
             transition: all 0.3s ease;
         }
+
         .btn-primary-modern {
             background: var(--primary-gradient);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
+
         .btn-primary-modern:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         }
+
         .preview-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: #1a1a1a;
             margin-bottom: 0.5rem;
         }
+
         .preview-description {
             color: #6c757d;
             line-height: 1.6;
         }
+
         .form-check-input[type="radio"] {
             margin-top: 12px;
         }
+
         @media (max-width: 768px) {
-            .form-section { padding: 1.5rem !important; }
+            .form-section {
+                padding: 1.5rem !important;
+            }
         }
     </style>
 </head>
+
 <body class="py-4">
     <div class="container">
         <!-- Header -->
@@ -167,21 +209,21 @@
                         <i class="bi bi-card-text me-2 text-primary"></i>
                         Basic Information
                     </h5>
-                    
+
                     <div class="row g-4">
                         <!-- Title -->
                         <div class="col-12">
                             <label for="title" class="form-label fw-semibold">
                                 <i class="bi bi-type me-2 text-primary"></i>Task Title *
                             </label>
-                            <input type="text" 
-                                   class="form-control form-control-lg <?= isset($errors['title']) ? 'is-invalid' : '' ?>" 
-                                   id="title" 
-                                   name="title" 
-                                   placeholder="Enter a clear and concise task title..."
-                                   value="<?= \Input::post('title', '') ?>"
-                                   maxlength="255"
-                                   required>
+                            <input type="text"
+                                class="form-control form-control-lg <?= isset($errors['title']) ? 'is-invalid' : '' ?>"
+                                id="title"
+                                name="title"
+                                placeholder="Enter a clear and concise task title..."
+                                value="<?= \Input::post('title', '') ?>"
+                                maxlength="255"
+                                required>
                             <?php if (isset($errors['title'])): ?>
                                 <div class="invalid-feedback"><?= $errors['title'][0] ?></div>
                             <?php endif; ?>
@@ -206,7 +248,7 @@
                         <i class="bi bi-gear-fill me-2 text-warning"></i>
                         Task Settings
                     </h5>
-                    
+
                     <div class="row g-4">
                         <!-- Status -->
                         <div class="col-md-6">
@@ -215,8 +257,8 @@
                             </label>
                             <div class="d-flex flex-wrap gap-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" id="statusPending" value="0" 
-                                           <?= \Input::post('status', 0) == 0 ? 'checked' : '' ?> required>
+                                    <input class="form-check-input" type="radio" name="status" id="statusPending" value="0"
+                                        <?= \Input::post('status', 0) == 0 ? 'checked' : '' ?> required>
                                     <label class="form-check-label d-flex align-items-center" for="statusPending">
                                         <span class="priority-badge priority-low me-2">
                                             <i class="bi bi-hourglass-split"></i> Pending
@@ -224,8 +266,8 @@
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" id="statusProgress" value="1" 
-                                           <?= \Input::post('status', 0) == 1 ? 'checked' : '' ?>>
+                                    <input class="form-check-input" type="radio" name="status" id="statusProgress" value="1"
+                                        <?= \Input::post('status', 0) == 1 ? 'checked' : '' ?>>
                                     <label class="form-check-label d-flex align-items-center" for="statusProgress">
                                         <span class="priority-badge priority-medium me-2">
                                             <i class="bi bi-arrow-repeat"></i> In Progress
@@ -233,8 +275,8 @@
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="status" id="statusCompleted" value="2" 
-                                           <?= \Input::post('status', 0) == 2 ? 'checked' : '' ?>>
+                                    <input class="form-check-input" type="radio" name="status" id="statusCompleted" value="2"
+                                        <?= \Input::post('status', 0) == 2 ? 'checked' : '' ?>>
                                     <label class="form-check-label d-flex align-items-center" for="statusCompleted">
                                         <span class="priority-badge priority-high me-2">
                                             <i class="bi bi-check-circle-fill"></i> Completed
@@ -251,22 +293,22 @@
                             </label>
                             <div class="d-flex flex-wrap gap-2">
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="priority" id="priorityLow" value="low" 
-                                           <?= \Input::post('priority', 'medium') == 'low' ? 'checked' : '' ?> required>
+                                    <input class="form-check-input" type="radio" name="priority" id="priorityLow" value="low"
+                                        <?= \Input::post('priority', 'medium') == 'low' ? 'checked' : '' ?> required>
                                     <label class="form-check-label priority-badge priority-low" for="priorityLow">
                                         <i class="bi bi-flag me-1"></i>Low
                                     </label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="priority" id="priorityMedium" value="medium" 
-                                           <?= \Input::post('priority', 'medium') == 'medium' ? 'checked' : '' ?>>
+                                    <input class="form-check-input" type="radio" name="priority" id="priorityMedium" value="medium"
+                                        <?= \Input::post('priority', 'medium') == 'medium' ? 'checked' : '' ?>>
                                     <label class="form-check-label priority-badge priority-medium" for="priorityMedium">
                                         <i class="bi bi-flag-fill me-1"></i>Medium
                                     </label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="priority" id="priorityHigh" value="high" 
-                                           <?= \Input::post('priority', 'medium') == 'high' ? 'checked' : '' ?>>
+                                    <input class="form-check-input" type="radio" name="priority" id="priorityHigh" value="high"
+                                        <?= \Input::post('priority', 'medium') == 'high' ? 'checked' : '' ?>>
                                     <label class="form-check-label priority-badge priority-high" for="priorityHigh">
                                         <i class="bi bi-exclamation-triangle-fill me-1"></i>High
                                     </label>
@@ -279,11 +321,11 @@
                             <label for="due_date" class="form-label fw-semibold">
                                 <i class="bi bi-calendar-event me-2 text-info"></i>Due Date (Optional)
                             </label>
-                            <input type="date" 
-                                   class="form-control form-control-lg" 
-                                   id="due_date" 
-                                   name="due_date" 
-                                   value="<?= \Input::post('due_date', '') ?>">
+                            <input type="date"
+                                class="form-control form-control-lg"
+                                id="due_date"
+                                name="due_date"
+                                value="<?= \Input::post('due_date', '') ?>">
                             <div class="form-text">Set a due date to stay on track</div>
                         </div>
                     </div>
@@ -330,7 +372,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex gap-3 flex-wrap">
                         <a href="<?= \Uri::create('task') ?>" class="btn btn-outline-secondary btn-modern">
                             <i class="bi bi-x-circle me-2"></i>Cancel
@@ -354,7 +396,7 @@
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
         // Initialize Quill Editor
         const quill = new Quill('#descriptionEditor', {
@@ -364,8 +406,14 @@
                 toolbar: [
                     ['bold', 'italic', 'underline'],
                     ['link'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'header': [1, 2, 3, false] }]
+                    [{
+                        'list': 'ordered'
+                    }, {
+                        'list': 'bullet'
+                    }],
+                    [{
+                        'header': [1, 2, 3, false]
+                    }]
                 ]
             }
         });
@@ -404,21 +452,21 @@
             const length = text.length - 1; // -1 for newline
             descCounter.textContent = `${length}/1000`;
             descCounter.className = length > 900 ? 'character-counter text-warning' : 'character-counter';
-            
-            const html = quill.root.innerHTML;
-            descriptionInput.value = html;
-            
-            previewDescription.innerHTML = html || '<em>Task description will appear here...</em>';
+
+            const root = quill.root;
+            descriptionInput.value = root.innerText || root.textContent;
+
+            previewDescription.innerHTML = root.innerHTML || '<em>Task description will appear here...</em>';
         });
 
         // Update priority preview
         priorityInputs.forEach(input => {
             input.addEventListener('change', function() {
                 const priority = this.value;
-                const icon = priority === 'low' ? 'bi-flag' : 
-                            priority === 'medium' ? 'bi-flag-fill' : 'bi-exclamation-triangle-fill';
+                const icon = priority === 'low' ? 'bi-flag' :
+                    priority === 'medium' ? 'bi-flag-fill' : 'bi-exclamation-triangle-fill';
                 const badgeClass = `priority-badge priority-${priority}`;
-                
+
                 previewPriority.innerHTML = `<i class="${icon} me-1"></i>${this.nextElementSibling.textContent}`;
                 previewPriority.className = `${badgeClass} d-inline-block w-100 mb-3`;
             });
@@ -429,18 +477,27 @@
             input.addEventListener('change', function() {
                 const status = this.value;
                 let icon, text;
-                if (status == 0) { icon = 'bi-hourglass-split'; text = 'Pending'; }
-                else if (status == 1) { icon = 'bi-arrow-repeat'; text = 'In Progress'; }
-                else { icon = 'bi-check-circle-fill'; text = 'Completed'; }
-                
+                if (status == 0) {
+                    icon = 'bi-hourglass-split';
+                    text = 'Pending';
+                } else if (status == 1) {
+                    icon = 'bi-arrow-repeat';
+                    text = 'In Progress';
+                } else {
+                    icon = 'bi-check-circle-fill';
+                    text = 'Completed';
+                }
+
                 previewStatus.innerHTML = `<span><i class="${icon} me-1"></i>${text}</span>`;
             });
         });
 
         // Update due date preview
         dueDateInput.addEventListener('change', function() {
+            console.log(this.value);
             if (this.value) {
                 const date = new Date(this.value);
+
                 previewDueDate.textContent = `Due ${date.toLocaleDateString('en-US', { 
                     month: 'short', day: 'numeric', year: 'numeric' 
                 })}`;
@@ -467,4 +524,5 @@
         statusInputs[0].dispatchEvent(new Event('change')); // pending
     </script>
 </body>
+
 </html>
